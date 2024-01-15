@@ -586,7 +586,7 @@ impl ClientExtension {
             Self::TransportParameters(_) => ExtensionType::TransportParameters,
             Self::TransportParametersDraft(_) => ExtensionType::TransportParametersDraft,
             Self::EarlyData => ExtensionType::EarlyData,
-            ClientExtension::CompressCertificate(_) => ExtensionType::CompressCertificate,
+            Self::CompressCertificate(_) => ExtensionType::CompressCertificate,
             Self::Unknown(ref r) => r.typ,
             Self::CraftPadding(_) => ExtensionType::Padding,
         }
@@ -617,7 +617,7 @@ impl Codec for ClientExtension {
             Self::TransportParameters(ref r) | Self::TransportParametersDraft(ref r) => {
                 nested.buf.extend_from_slice(r);
             }
-            ClientExtension::CompressCertificate(ref r) => r.encode(nested.buf),
+            Self::CompressCertificate(ref r) => r.encode(nested.buf),
             Self::Unknown(ref r) => r.encode(nested.buf),
             Self::CraftPadding(ref r) => r.encode(nested.buf),
         }
@@ -1456,7 +1456,7 @@ impl CompressedCertificatePayload {
             .compress(writer, &input)
             .map_err(|_e| Error::FailedCertificateCompression)?;
 
-        Ok(CompressedCertificatePayload {
+        Ok(Self {
             algorithm: compression.alg,
             uncompressed_length: codec::u24(input_len as u32),
             compressed_certificate_message: PayloadU24::new(output),
@@ -1474,7 +1474,7 @@ impl CompressedCertificatePayload {
 
         let writer = Vec::with_capacity(uncompressed_length);
         let output = provider
-            .decompress(writer, &input)
+            .decompress(writer, input)
             .map_err(|_e| Error::FailedCertificateDecompression)?;
 
         if output.len() != uncompressed_length {

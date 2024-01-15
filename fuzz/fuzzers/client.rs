@@ -12,7 +12,12 @@ fuzz_target!(|data: &[u8]| {
     let config = Arc::new(
         ClientConfig::builder()
             .with_root_certificates(root_store)
-            .with_no_client_auth(),
+            .with_no_client_auth()
+            .with_fingerprint(
+                rustls::craft::CHROME_108
+                    .test_alpn_http1
+                    .builder(),
+            ),
     );
     let example_com = "example.com".try_into().unwrap();
     let mut client = ClientConnection::new(config, example_com).unwrap();

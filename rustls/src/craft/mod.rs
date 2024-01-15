@@ -103,9 +103,9 @@ impl CraftConnectionData {
         use BoringSslGreaseIndex::*;
         let mut grease_seed = [0u16; NumOfGrease as usize];
         thread_rng().fill(&mut grease_seed);
-        for i in 0..NumOfGrease as usize {
-            let unit = (grease_seed[i] & 0xf0u16) | 0x0au16;
-            grease_seed[i] = unit << 8 | unit;
+        for seed in grease_seed.iter_mut() {
+            let unit = (*seed & 0xf0u16) | 0x0au16;
+            *seed = unit << 8 | unit;
         }
         if grease_seed[Extension1 as usize] == grease_seed[Extension2 as usize] {
             grease_seed[Extension2 as usize] ^= 0x1010;
@@ -148,7 +148,7 @@ impl<T: Clone> GreaseOr<T> {
     pub(crate) fn val(&self) -> T {
         match self {
             Grease => unimplemented!(),
-            GreaseOr::T(t) => t.clone(),
+            Self::T(t) => t.clone(),
         }
     }
 }
@@ -166,14 +166,14 @@ impl<T> GreaseOr<T> {
     {
         match self {
             Grease => T::create_unknown(grease),
-            GreaseOr::T(t) => t.clone(),
+            Self::T(t) => t.clone(),
         }
     }
 }
 
 impl<T> From<T> for GreaseOr<T> {
     fn from(value: T) -> Self {
-        GreaseOr::T(value)
+        Self::T(value)
     }
 }
 
@@ -325,7 +325,7 @@ impl CraftExtension {
     ) -> Result<ClientExtension, ()> {
         let craft_config = config.craft.get();
         Ok(match self {
-            CraftExtension::Grease1 => Self::make_ext(
+            Self::Grease1 => Self::make_ext(
                 cx.data
                     .craft_connection_data
                     .grease_seed
@@ -333,7 +333,7 @@ impl CraftExtension {
                     .into(),
                 Vec::new(),
             ),
-            CraftExtension::Grease2 => Self::make_ext(
+            Self::Grease2 => Self::make_ext(
                 cx.data
                     .craft_connection_data
                     .grease_seed
@@ -341,10 +341,8 @@ impl CraftExtension {
                     .into(),
                 vec![0],
             ),
-            CraftExtension::RenegotiationInfo => {
-                Self::make_ext(ExtensionType::RenegotiationInfo, vec![0])
-            }
-            CraftExtension::SupportedCurves(curves) => {
+            Self::RenegotiationInfo => Self::make_ext(ExtensionType::RenegotiationInfo, vec![0]),
+            Self::SupportedCurves(curves) => {
                 let mut origin_curves = get_origin_ext!(
                     ext_store.remove(&ExtensionType::EllipticCurves.get_u16()),
                     ClientExtension::NamedGroups,
@@ -371,7 +369,7 @@ impl CraftExtension {
                 }
                 ClientExtension::NamedGroups(origin_curves)
             }
-            CraftExtension::SupportedVersions(versions) => {
+            Self::SupportedVersions(versions) => {
                 let origin_versions = get_origin_ext!(
                     ext_store.remove(&ExtensionType::SupportedVersions.get_u16()),
                     ClientExtension::SupportedVersions,
@@ -399,10 +397,8 @@ impl CraftExtension {
                         .collect(),
                 )
             }
-            CraftExtension::SignedCertificateTimestamp => {
-                Self::make_ext(ExtensionType::SCT, vec![])
-            }
-            CraftExtension::KeyShare(key_share_spec) => {
+            Self::SignedCertificateTimestamp => Self::make_ext(ExtensionType::SCT, vec![]),
+            Self::KeyShare(key_share_spec) => {
                 if hrr.is_some()
                     && hrr
                         .unwrap()
@@ -429,14 +425,12 @@ impl CraftExtension {
                 for group_spec in key_share_spec.iter() {
                     key_shares.push(match group_spec {
                         Grease => KeyShareEntry {
-                            group: group_spec
-                                .val_or(
-                                    cx.data
-                                        .craft_connection_data
-                                        .grease_seed
-                                        .get(BoringSslGreaseIndex::Group),
-                                )
-                                .into(),
+                            group: group_spec.val_or(
+                                cx.data
+                                    .craft_connection_data
+                                    .grease_seed
+                                    .get(BoringSslGreaseIndex::Group),
+                            ),
                             payload: PayloadU16(vec![0]),
                         },
                         GreaseOr::T(group) => {
@@ -482,10 +476,10 @@ impl CraftExtension {
 
                 ClientExtension::KeyShare(key_shares)
             }
-            CraftExtension::FakeApplicationSettings => {
+            Self::FakeApplicationSettings => {
                 Self::make_ext(17513.into(), vec![0, 3, 2, b'h', b'2'])
             }
-            CraftExtension::Padding => {
+            Self::Padding => {
                 ClientExtension::CraftPadding(CraftPadding {
                     psk_len: if let Some(ClientExtension::PresharedKey(psk)) =
                         ext_store.get(&ExtensionType::PreSharedKey.get_u16())
@@ -496,8 +490,8 @@ impl CraftExtension {
                     },
                 })
             }
-            CraftExtension::FakeCompressCert => Self::make_ext(0x001b.into(), vec![2, 0, 0]),
-            CraftExtension::CompressCert(algorithms) => {
+            Self::FakeCompressCert => Self::make_ext(0x001b.into(), vec![2, 0, 0]),
+            Self::CompressCert(algorithms) => {
                 if craft_config.strict_mode {
                     config
                         .certificate_compression_algorithms
@@ -511,22 +505,21 @@ impl CraftExtension {
                     .remove(&ExtensionType::CompressCertificate.get_u16())
                     .ok_or(())?
             }
-            CraftExtension::Protocols(protocols) => {
-                if craft_config.strict_mode {
-                    if protocols.len() != config.alpn_protocols.len()
+            Self::Protocols(protocols) => {
+                if craft_config.strict_mode
+                    && (protocols.len() != config.alpn_protocols.len()
                         || protocols
                             .iter()
                             .zip(config.alpn_protocols.iter())
-                            .any(|(p1, p2)| p1 != &p2.as_slice())
-                    {
-                        panic!()
-                    }
+                            .any(|(p1, p2)| p1 != &p2.as_slice()))
+                {
+                    panic!()
                 }
                 ext_store
                     .remove(&ExtensionType::ALProtocolNegotiation.get_u16())
                     .ok_or(())?
             }
-            CraftExtension::FakeDelegatedCredentials(delegated) => {
+            Self::FakeDelegatedCredentials(delegated) => {
                 let mut buf = vec![];
                 {
                     let length_padded =
@@ -537,7 +530,7 @@ impl CraftExtension {
                 };
                 Self::make_ext(34.into(), buf)
             }
-            CraftExtension::FakeRecordSizeLimit(limit) => {
+            Self::FakeRecordSizeLimit(limit) => {
                 Self::make_ext(28.into(), limit.to_be_bytes().to_vec())
             }
         })
@@ -555,7 +548,7 @@ impl Codec for CraftPadding {
         let unpadded = self.psk_len + bytes.len() - 4;
         if unpadded > 0xff && unpadded < 0x200 {
             let mut padding_len = 0x200 - unpadded;
-            if padding_len >= 4 + 1 {
+            if padding_len > 4 {
                 padding_len -= 4;
             } else {
                 padding_len = 1
@@ -725,7 +718,7 @@ impl Fingerprint {
                 .data
                 .craft_connection_data
                 .extension_order;
-            if order.len() == 0 {
+            if order.is_empty() {
                 iter_a = Some(0..self.extensions.len())
             } else {
                 iter_b = Some(order.clone().into_iter())
@@ -739,7 +732,7 @@ impl Fingerprint {
         for idx in order {
             let spec = &self.extensions[idx];
             extension.push(match spec {
-                Craft(ext) => match ext.to_rustls_extension(cx, &config, &mut ext_store, hrr) {
+                Craft(ext) => match ext.to_rustls_extension(cx, config, &mut ext_store, hrr) {
                     Ok(ext) => ext,
                     Err(_) => continue,
                 },
@@ -949,7 +942,7 @@ pub struct FingerprintSet {
     pub test_no_alpn: Fingerprint,
 }
 
-impl std::ops::Deref for FingerprintSet {
+impl core::ops::Deref for FingerprintSet {
     type Target = Fingerprint;
 
     /// Provides implicit access to the [`FingerprintSet::main`] variant when a [`FingerprintSet`] is dereferenced.
