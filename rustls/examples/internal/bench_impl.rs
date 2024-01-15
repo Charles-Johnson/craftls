@@ -378,9 +378,11 @@ fn make_client_config(
         cfg.with_no_client_auth()
     }
     .with_fingerprint(
-        rustls::craft::CHROME_108
+        rustls::craft::RUSTLS_TEST
             .test_alpn_http1
-            .builder(),
+            .builder()
+            .dangerous_craft_test_mode()
+            .dangerous_disable_override_suite(),
     );
 
     if resume != ResumptionParam::No {
