@@ -2,7 +2,7 @@
 name = "craftls"
 version = "0.22.0-craft.0.2"
 edition = "2021"
-rust-version = "1.61"
+rust-version = "1.66"
 license = "Apache-2.0 OR ISC OR MIT"
 readme = "../README.md"
 description = "Rustls is a modern TLS library written in Rust."
@@ -34,6 +34,7 @@ rand = "0.8.5" #!craft!
 brotli = "3.4.0"
 flate2 = "1.0.28"
 zstd = "0.12.3"
+home = "=0.5.5" #!craft! to minimize MSRV
 
 [features]
 default = ["logging", "ring", "tls12"]

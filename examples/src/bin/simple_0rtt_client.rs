@@ -69,7 +69,7 @@ fn main() {
         .with_root_certificates(root_store)
         .with_no_client_auth()
         .with_fingerprint(
-            rustls::craft::CHROME_108
+            rustls::craft::RUSTLS_TEST
                 .test_alpn_http1
                 .builder(),
         );

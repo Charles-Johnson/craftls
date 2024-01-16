@@ -21,7 +21,9 @@ fn main() {
             .with_fingerprint(
                 rustls::craft::CHROME_108
                     .test_alpn_http1
-                    .builder(),
+                    .builder()
+                    .dangerous_craft_test_mode()
+                    .dangerous_disable_override_suite(),
             );
 
     let server_name = "www.rust-lang.org".try_into().unwrap();

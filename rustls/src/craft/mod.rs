@@ -388,7 +388,11 @@ impl CraftExtension {
                         })
                         .filter(|v| {
                             if !v.craft_is_unknown() && !origin_versions.contains(v) {
-                                assert!(!craft_config.strict_mode);
+                                assert!(
+                                    !craft_config.strict_mode,
+                                    "unknown version {:?}, all: {:?}",
+                                    v, origin_versions
+                                );
                                 false
                             } else {
                                 true
@@ -669,13 +673,13 @@ impl Fingerprint {
         extension: &mut Vec<ClientExtension>,
     ) {
         let craft_config = config.craft.get();
-        if extension
-            .iter()
-            .any(|v| matches!(v, ClientExtension::EarlyData))
-        {
-            assert!(!craft_config.strict_mode);
-            return;
-        }
+        // if extension
+        //     .iter()
+        //     .any(|v| matches!(v, ClientExtension::EarlyData))
+        // {
+        //     assert!(!craft_config.strict_mode);
+        //     return;
+        // }
 
         let mut ext_store = HashMap::new();
         for ext in extension.drain(..) {
@@ -687,10 +691,9 @@ impl Fingerprint {
                 | ClientExtension::Protocols(_)
                 | ClientExtension::NamedGroups(_)
                 | ClientExtension::SupportedVersions(_)
-                | ClientExtension::Cookie(_) => {
-                    ext_store.insert(ext.get_type().get_u16(), ext);
-                }
-                ClientExtension::CompressCertificate(_) => {
+                | ClientExtension::Cookie(_)
+                | ClientExtension::EarlyData
+                | ClientExtension::CompressCertificate(_) => {
                     ext_store.insert(ext.get_type().get_u16(), ext);
                 }
                 _ => (),

@@ -56,6 +56,13 @@ macro_rules! define_fingerprint {
     };
 }
 
+macro_rules! static_ref {
+    ($val:expr, $type:ty) => {{
+        static X: $type = $val;
+        X
+    }};
+}
+
 /// The default ocsp request of browsers
 pub static OCSP_REQ: CertificateStatusRequest =
     CertificateStatusRequest::Ocsp(OcspCertificateStatusRequest {
@@ -89,12 +96,15 @@ pub static CHROME_108_EXT: Vec<ExtensionSpec> = {
         Keep(Must(ExtensionType::ServerName)),
         Rustls(ClientExtension::ExtendedMasterSecretRequest),
         Craft(CraftExtension::RenegotiationInfo),
-        Craft(CraftExtension::SupportedCurves(&[
-            Grease,
-            GreaseOrCurve::T(NamedGroup::X25519),
-            GreaseOrCurve::T(NamedGroup::secp256r1),
-            GreaseOrCurve::T(NamedGroup::secp384r1),
-        ])),
+        Craft(CraftExtension::SupportedCurves(static_ref!(
+            &[
+                Grease,
+                GreaseOrCurve::T(NamedGroup::X25519),
+                GreaseOrCurve::T(NamedGroup::secp256r1),
+                GreaseOrCurve::T(NamedGroup::secp384r1),
+            ],
+            &[GreaseOrCurve]
+        ))),
         Rustls(ClientExtension::EcPointFormats(vec![
             ECPointFormat::Uncompressed,
         ])),
@@ -108,22 +118,27 @@ pub static CHROME_108_EXT: Vec<ExtensionSpec> = {
             CHROME_108_SIGNATURE_ALGO.to_vec(),
         )),
         Craft(CraftExtension::SignedCertificateTimestamp),
-        Craft(CraftExtension::KeyShare(&[
-            Grease,
-            GreaseOrCurve::T(NamedGroup::X25519),
-        ])),
+        Craft(CraftExtension::KeyShare(static_ref!(
+            &[Grease, GreaseOrCurve::T(NamedGroup::X25519),],
+            &[GreaseOrCurve]
+        ))),
         Rustls(ClientExtension::PresharedKeyModes(vec![
             PSKKeyExchangeMode::PSK_DHE_KE,
         ])),
-        Craft(CraftExtension::SupportedVersions(&[
-            Grease,
-            GreaseOrVersion::T(ProtocolVersion::TLSv1_3),
-            GreaseOrVersion::T(ProtocolVersion::TLSv1_2),
-        ])),
+        Keep(Optional(ExtensionType::EarlyData)),
+        Craft(CraftExtension::SupportedVersions(static_ref!(
+            &[
+                Grease,
+                GreaseOrVersion::T(ProtocolVersion::TLSv1_3),
+                GreaseOrVersion::T(ProtocolVersion::TLSv1_2),
+            ],
+            &[GreaseOrVersion]
+        ))),
         Keep(Optional(ExtensionType::Cookie)),
-        Craft(CraftExtension::CompressCert(&[
-            crate::CertificateCompressionAlgorithm::Brotli,
-        ])),
+        Craft(CraftExtension::CompressCert(static_ref!(
+            &[crate::CertificateCompressionAlgorithm::Brotli],
+            &[crate::CertificateCompressionAlgorithm]
+        ))),
         Craft(CraftExtension::FakeApplicationSettings),
         Craft(CraftExtension::Grease2),
         Craft(CraftExtension::Padding),
@@ -133,7 +148,7 @@ pub static CHROME_108_EXT: Vec<ExtensionSpec> = {
 
 #[dynamic]
 /// The extension list of chrome 108
-pub(crate) static CHROME_108_EXT_TEST: Vec<ExtensionSpec> = {
+pub(crate) static EXT_TEST: Vec<ExtensionSpec> = {
     use ExtensionSpec::*;
     use KeepExtension::*;
     vec![
@@ -141,12 +156,15 @@ pub(crate) static CHROME_108_EXT_TEST: Vec<ExtensionSpec> = {
         Keep(Must(ExtensionType::ServerName)),
         Rustls(ClientExtension::ExtendedMasterSecretRequest),
         Craft(CraftExtension::RenegotiationInfo),
-        Craft(CraftExtension::SupportedCurves(&[
-            Grease,
-            GreaseOrCurve::T(NamedGroup::X25519),
-            GreaseOrCurve::T(NamedGroup::secp256r1),
-            GreaseOrCurve::T(NamedGroup::secp384r1),
-        ])),
+        Craft(CraftExtension::SupportedCurves(static_ref!(
+            &[
+                Grease,
+                GreaseOrCurve::T(NamedGroup::X25519),
+                GreaseOrCurve::T(NamedGroup::secp256r1),
+                GreaseOrCurve::T(NamedGroup::secp384r1),
+            ],
+            &[GreaseOrCurve]
+        ))),
         Rustls(ClientExtension::EcPointFormats(vec![
             ECPointFormat::Uncompressed,
         ])),
@@ -171,22 +189,27 @@ pub(crate) static CHROME_108_EXT_TEST: Vec<ExtensionSpec> = {
             .to_vec(),
         )),
         Craft(CraftExtension::SignedCertificateTimestamp),
-        Craft(CraftExtension::KeyShare(&[
-            Grease,
-            GreaseOrCurve::T(NamedGroup::X25519),
-        ])),
+        Craft(CraftExtension::KeyShare(static_ref!(
+            &[Grease, GreaseOrCurve::T(NamedGroup::X25519)],
+            &[GreaseOrCurve]
+        ))),
         Rustls(ClientExtension::PresharedKeyModes(vec![
             PSKKeyExchangeMode::PSK_DHE_KE,
         ])),
-        Craft(CraftExtension::SupportedVersions(&[
-            Grease,
-            GreaseOrVersion::T(ProtocolVersion::TLSv1_3),
-            GreaseOrVersion::T(ProtocolVersion::TLSv1_2),
-        ])),
+        Keep(Optional(ExtensionType::EarlyData)),
+        Craft(CraftExtension::SupportedVersions(static_ref!(
+            &[
+                Grease,
+                GreaseOrVersion::T(ProtocolVersion::TLSv1_3),
+                GreaseOrVersion::T(ProtocolVersion::TLSv1_2),
+            ],
+            &[GreaseOrVersion]
+        ))),
         Keep(Optional(ExtensionType::Cookie)),
-        Craft(CraftExtension::CompressCert(&[
-            crate::CertificateCompressionAlgorithm::Brotli,
-        ])),
+        Craft(CraftExtension::CompressCert(static_ref!(
+            &[crate::CertificateCompressionAlgorithm::Brotli],
+            &[crate::CertificateCompressionAlgorithm]
+        ))),
         // Craft(CraftExtension::FakeApplicationSettings),
         Craft(CraftExtension::Grease2),
         // Craft(CraftExtension::Padding),
@@ -222,7 +245,7 @@ pub static CHROME_CIPHER: Vec<GreaseOrCipher> = {
 
 define_fingerprint!(CHROME_108 { &CHROME_108_EXT, &CHROME_CIPHER });
 define_fingerprint!(CHROME_112 { shuffle(&CHROME_108_EXT), &CHROME_CIPHER });
-define_fingerprint!(RUSTLS_TEST { &CHROME_108_EXT_TEST, &CHROME_CIPHER });
+define_fingerprint!(RUSTLS_TEST { &EXT_TEST, &CHROME_CIPHER });
 
 /// The cipher list of Safari 17.1
 ///
@@ -280,13 +303,16 @@ pub static SAFARI_17_1_EXT: Vec<ExtensionSpec> = {
         Keep(Must(ExtensionType::ServerName)),
         Rustls(ClientExtension::ExtendedMasterSecretRequest),
         Craft(CraftExtension::RenegotiationInfo),
-        Craft(CraftExtension::SupportedCurves(&[
-            Grease,
-            GreaseOrCurve::T(NamedGroup::X25519),
-            GreaseOrCurve::T(NamedGroup::secp256r1),
-            GreaseOrCurve::T(NamedGroup::secp384r1),
-            GreaseOrCurve::T(NamedGroup::secp521r1),
-        ])),
+        Craft(CraftExtension::SupportedCurves(static_ref!(
+            &[
+                Grease,
+                GreaseOrCurve::T(NamedGroup::X25519),
+                GreaseOrCurve::T(NamedGroup::secp256r1),
+                GreaseOrCurve::T(NamedGroup::secp384r1),
+                GreaseOrCurve::T(NamedGroup::secp521r1),
+            ],
+            &[GreaseOrCurve]
+        ))),
         Rustls(ClientExtension::EcPointFormats(vec![
             ECPointFormat::Uncompressed,
         ])),
@@ -296,20 +322,23 @@ pub static SAFARI_17_1_EXT: Vec<ExtensionSpec> = {
             SAFARI_17_1_SIGNATURE_ALGO.to_vec(),
         )),
         Craft(CraftExtension::SignedCertificateTimestamp),
-        Craft(CraftExtension::KeyShare(&[
-            Grease,
-            GreaseOrCurve::T(NamedGroup::X25519),
-        ])),
+        Craft(CraftExtension::KeyShare(static_ref!(
+            &[Grease, GreaseOrCurve::T(NamedGroup::X25519)],
+            &[GreaseOrCurve]
+        ))),
         Rustls(ClientExtension::PresharedKeyModes(vec![
             PSKKeyExchangeMode::PSK_DHE_KE,
         ])),
-        Craft(CraftExtension::SupportedVersions(&[
-            Grease,
-            GreaseOrVersion::T(ProtocolVersion::TLSv1_3),
-            GreaseOrVersion::T(ProtocolVersion::TLSv1_2),
-            GreaseOrVersion::T(ProtocolVersion::TLSv1_1),
-            GreaseOrVersion::T(ProtocolVersion::TLSv1_0),
-        ])),
+        Craft(CraftExtension::SupportedVersions(static_ref!(
+            &[
+                Grease,
+                GreaseOrVersion::T(ProtocolVersion::TLSv1_3),
+                GreaseOrVersion::T(ProtocolVersion::TLSv1_2),
+                GreaseOrVersion::T(ProtocolVersion::TLSv1_1),
+                GreaseOrVersion::T(ProtocolVersion::TLSv1_0),
+            ],
+            &[GreaseOrVersion]
+        ))),
         Keep(Optional(ExtensionType::Cookie)),
         Craft(CraftExtension::CompressCert(&[
             crate::CertificateCompressionAlgorithm::Zlib,
@@ -372,14 +401,17 @@ pub static FIREFOX_105_EXT: Vec<ExtensionSpec> = {
         Keep(Must(ExtensionType::ServerName)),
         Rustls(ClientExtension::ExtendedMasterSecretRequest),
         Craft(CraftExtension::RenegotiationInfo),
-        Craft(CraftExtension::SupportedCurves(&[
-            GreaseOrCurve::T(NamedGroup::X25519),
-            GreaseOrCurve::T(NamedGroup::secp256r1),
-            GreaseOrCurve::T(NamedGroup::secp384r1),
-            GreaseOrCurve::T(NamedGroup::secp521r1),
-            GreaseOrCurve::T(NamedGroup::FFDHE2048),
-            GreaseOrCurve::T(NamedGroup::FFDHE3072),
-        ])),
+        Craft(CraftExtension::SupportedCurves(static_ref!(
+            &[
+                GreaseOrCurve::T(NamedGroup::X25519),
+                GreaseOrCurve::T(NamedGroup::secp256r1),
+                GreaseOrCurve::T(NamedGroup::secp384r1),
+                GreaseOrCurve::T(NamedGroup::secp521r1),
+                GreaseOrCurve::T(NamedGroup::FFDHE2048),
+                GreaseOrCurve::T(NamedGroup::FFDHE3072),
+            ],
+            &[GreaseOrCurve]
+        ))),
         Rustls(ClientExtension::EcPointFormats(vec![
             ECPointFormat::Uncompressed,
         ])),
@@ -391,14 +423,20 @@ pub static FIREFOX_105_EXT: Vec<ExtensionSpec> = {
             SignatureScheme::ECDSA_NISTP521_SHA512,
             SignatureScheme::ECDSA_SHA1_Legacy,
         ])),
-        Craft(CraftExtension::KeyShare(&[
-            GreaseOrCurve::T(NamedGroup::X25519),
-            GreaseOrCurve::T(NamedGroup::secp256r1),
-        ])),
-        Craft(CraftExtension::SupportedVersions(&[
-            GreaseOrVersion::T(ProtocolVersion::TLSv1_3),
-            GreaseOrVersion::T(ProtocolVersion::TLSv1_2),
-        ])),
+        Craft(CraftExtension::KeyShare(static_ref!(
+            &[
+                GreaseOrCurve::T(NamedGroup::X25519),
+                GreaseOrCurve::T(NamedGroup::secp256r1),
+            ],
+            &[GreaseOrCurve]
+        ))),
+        Craft(CraftExtension::SupportedVersions(static_ref!(
+            &[
+                GreaseOrVersion::T(ProtocolVersion::TLSv1_3),
+                GreaseOrVersion::T(ProtocolVersion::TLSv1_2),
+            ],
+            &[GreaseOrVersion]
+        ))),
         Rustls(ClientExtension::SignatureAlgorithms(
             FIREFOX_105_SIGNATURE_ALGO.to_vec(),
         )),

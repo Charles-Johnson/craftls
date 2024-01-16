@@ -93,22 +93,23 @@ jobs:
         run: cargo run --locked -p rustls-provider-example --example client
 
 
-  feature-powerset:
-    name: Feature Powerset
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
+  # !craft! tls1.2 must be enabled
+  # feature-powerset:
+  #   name: Feature Powerset
+  #   runs-on: ubuntu-20.04
+  #   steps:
+  #     - name: Checkout sources
+  #       uses: actions/checkout@v4
+  #       with:
+  #         persist-credentials: false
 
-      - name: Install stable toolchain
-        uses: dtolnay/rust-toolchain@stable
+  #     - name: Install stable toolchain
+  #       uses: dtolnay/rust-toolchain@stable
 
-      - name: Install cargo hack
-        uses: taiki-e/install-action@cargo-hack
+  #     - name: Install cargo hack
+  #       uses: taiki-e/install-action@cargo-hack
 
-      - name: Check feature powerset
-        run: cargo hack check --feature-powerset --no-dev-deps
-        env:
-          RUSTFLAGS: --deny warnings
+  #     - name: Check feature powerset
+  #       run: cargo hack check --feature-powerset --no-dev-deps
+  #       env:
+  #         RUSTFLAGS: --deny warnings
