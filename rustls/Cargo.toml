@@ -1,13 +1,13 @@
 [package]
 name = "craftls"
-version = "0.22.0-craft.0.2"
+version = "0.0.2+rustls.0.22.0"
 edition = "2021"
 rust-version = "1.66"
 license = "Apache-2.0 OR ISC OR MIT"
 readme = "../README.md"
 description = "Rustls is a modern TLS library written in Rust."
-homepage = "https://github.com/rustls/rustls"
-repository = "https://github.com/rustls/rustls"
+homepage = "https://github.com/3andne/craftls"
+repository = "https://github.com/3andne/craftls"
 categories = ["network-programming", "cryptography"]
 autobenches = false
 build = "build.rs"
