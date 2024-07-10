@@ -18,7 +18,6 @@ use alloc::sync::Arc;
 pub(crate) use aws_lc_rs as ring_like;
 
 /// Using software keys for authentication.
-#[path = "../ring/sign.rs"]
 pub mod sign;
 
 #[path = "../ring/hash.rs"]
@@ -114,6 +113,7 @@ static SUPPORTED_SIG_ALGS: WebPkiSupportedAlgorithms = WebPkiSupportedAlgorithms
         webpki_algs::ECDSA_P256_SHA384,
         webpki_algs::ECDSA_P384_SHA256,
         webpki_algs::ECDSA_P384_SHA384,
+        webpki_algs::ECDSA_P521_SHA512,
         webpki_algs::ED25519,
         webpki_algs::RSA_PSS_2048_8192_SHA256_LEGACY_KEY,
         webpki_algs::RSA_PSS_2048_8192_SHA384_LEGACY_KEY,
@@ -125,6 +125,10 @@ static SUPPORTED_SIG_ALGS: WebPkiSupportedAlgorithms = WebPkiSupportedAlgorithms
     ],
     mapping: &[
         // Note: for TLS1.2 the curve is not fixed by SignatureScheme. For TLS1.3 it is.
+        (
+            SignatureScheme::ECDSA_NISTP521_SHA512,
+            &[webpki_algs::ECDSA_P521_SHA512],
+        ),
         (
             SignatureScheme::ECDSA_NISTP384_SHA384,
             &[
@@ -191,17 +195,5 @@ mod ring_shim {
         ring_like::agreement::agree_ephemeral(priv_key, peer_key, (), |secret| {
             Ok(SharedSecret::from(secret))
         })
-    }
-
-    pub(super) fn rsa_key_pair_public_modulus_len(kp: &ring_like::signature::RsaKeyPair) -> usize {
-        kp.public_modulus_len()
-    }
-
-    pub(super) fn ecdsa_key_pair_from_pkcs8(
-        alg: &'static ring_like::signature::EcdsaSigningAlgorithm,
-        data: &[u8],
-        _rng: &dyn ring_like::rand::SecureRandom,
-    ) -> Result<ring_like::signature::EcdsaKeyPair, ()> {
-        ring_like::signature::EcdsaKeyPair::from_pkcs8(alg, data).map_err(|_| ())
     }
 }

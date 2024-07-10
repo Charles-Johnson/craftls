@@ -333,10 +333,16 @@ fn all_benchmarks_params() -> Vec<BenchmarkParams> {
                 "1.3_rsa_aes",
             ),
             (
-                KeyType::Ecdsa,
+                KeyType::EcdsaP256,
                 CipherSuite::TLS13_AES_128_GCM_SHA256,
                 &rustls::version::TLS13,
-                "1.3_ecdsa_aes",
+                "1.3_ecdsap256_aes",
+            ),
+            (
+                KeyType::EcdsaP384,
+                CipherSuite::TLS13_AES_128_GCM_SHA256,
+                &rustls::version::TLS13,
+                "1.3_ecdsap384_aes",
             ),
             (
                 KeyType::Rsa,
@@ -345,10 +351,16 @@ fn all_benchmarks_params() -> Vec<BenchmarkParams> {
                 "1.3_rsa_chacha",
             ),
             (
-                KeyType::Ecdsa,
+                KeyType::EcdsaP256,
                 CipherSuite::TLS13_CHACHA20_POLY1305_SHA256,
                 &rustls::version::TLS13,
-                "1.3_ecdsa_chacha",
+                "1.3_ecdsap256_chacha",
+            ),
+            (
+                KeyType::EcdsaP384,
+                CipherSuite::TLS13_CHACHA20_POLY1305_SHA256,
+                &rustls::version::TLS13,
+                "1.3_ecdsap384_chacha",
             ),
         ] {
             all.push(BenchmarkParams::new(

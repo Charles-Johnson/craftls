@@ -526,6 +526,8 @@ impl SignatureScheme {
             Self::ECDSA_NISTP256_SHA256
             | Self::ECDSA_NISTP384_SHA384
             | Self::ECDSA_NISTP521_SHA512 => SignatureAlgorithm::ECDSA,
+            Self::ED25519 => SignatureAlgorithm::ED25519,
+            Self::ED448 => SignatureAlgorithm::ED448,
             _ => SignatureAlgorithm::Unknown(0),
         }
     }
@@ -540,7 +542,8 @@ impl SignatureScheme {
     pub(crate) fn supported_in_tls13(&self) -> bool {
         matches!(
             *self,
-            Self::ECDSA_NISTP384_SHA384
+            Self::ECDSA_NISTP521_SHA512
+                | Self::ECDSA_NISTP384_SHA384
                 | Self::ECDSA_NISTP256_SHA256
                 | Self::RSA_PSS_SHA512
                 | Self::RSA_PSS_SHA384
