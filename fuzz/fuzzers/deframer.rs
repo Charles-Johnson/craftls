@@ -9,17 +9,21 @@ use rustls::internal::record_layer::RecordLayer;
 use std::io;
 
 fuzz_target!(|data: &[u8]| {
+    let mut buf = deframer::DeframerVecBuffer::default();
     let mut dfm = deframer::MessageDeframer::default();
     if dfm
-        .read(&mut io::Cursor::new(data))
+        .read(&mut io::Cursor::new(data), &mut buf)
         .is_err()
     {
         return;
     }
-    dfm.has_pending();
+    buf.has_pending();
 
     let mut rl = RecordLayer::new();
-    while let Ok(Some(decrypted)) = dfm.pop(&mut rl, None) {
+    let mut borrowed_buf = buf.borrow();
+    while let Ok(Some(decrypted)) = dfm.pop(&mut rl, None, &mut borrowed_buf) {
         Message::try_from(decrypted.message).ok();
     }
+    let discard = borrowed_buf.pending_discard();
+    buf.discard(discard);
 });

@@ -3,7 +3,7 @@ use crate::enums::{AlertDescription, ContentType};
 use crate::error::{Error, PeerMisbehaved};
 #[cfg(feature = "logging")]
 use crate::log::trace;
-use crate::msgs::deframer::{Deframed, MessageDeframer};
+use crate::msgs::deframer::{Deframed, DeframerSliceBuffer, DeframerVecBuffer, MessageDeframer};
 use crate::msgs::handshake::Random;
 use crate::msgs::message::{Message, MessagePayload, PlainMessage};
 use crate::suites::{ExtractedSecrets, PartiallyExtractedSecrets};
@@ -328,6 +328,7 @@ fn is_valid_ccs(msg: &PlainMessage) -> bool {
 /// Interface shared by client and server connections.
 pub struct ConnectionCommon<Data> {
     pub(crate) core: ConnectionCore<Data>,
+    deframer_buffer: DeframerVecBuffer,
 }
 
 impl<Data> ConnectionCommon<Data> {
@@ -339,7 +340,7 @@ impl<Data> ConnectionCommon<Data> {
             // Are we done? i.e., have we processed all received messages, and received a
             // close_notify to indicate that no new messages will arrive?
             peer_cleanly_closed: common.has_received_close_notify
-                && !self.core.message_deframer.has_pending(),
+                && !self.deframer_buffer.has_pending(),
             has_seen_eof: common.has_seen_eof,
         }
     }
@@ -451,11 +452,14 @@ impl<Data> ConnectionCommon<Data> {
     /// This is a shortcut to the `process_new_packets()` -> `process_msg()` ->
     /// `process_handshake_messages()` path, specialized for the first handshake message.
     pub(crate) fn first_handshake_message(&mut self) -> Result<Option<Message>, Error> {
-        match self
+        let mut deframer_buffer = self.deframer_buffer.borrow();
+        let res = self
             .core
-            .deframe()?
-            .map(Message::try_from)
-        {
+            .deframe(None, &mut deframer_buffer);
+        let discard = deframer_buffer.pending_discard();
+        self.deframer_buffer.discard(discard);
+
+        match res?.map(Message::try_from) {
             Some(Ok(msg)) => Ok(Some(msg)),
             Some(Err(err)) => Err(self.send_fatal_alert(AlertDescription::DecodeError, err)),
             None => Ok(None),
@@ -486,7 +490,8 @@ impl<Data> ConnectionCommon<Data> {
     /// [`process_new_packets`]: Connection::process_new_packets
     #[inline]
     pub fn process_new_packets(&mut self) -> Result<IoState, Error> {
-        self.core.process_new_packets()
+        self.core
+            .process_new_packets(&mut self.deframer_buffer)
     }
 
     /// Read TLS content from `rd` into the internal buffer.
@@ -516,7 +521,10 @@ impl<Data> ConnectionCommon<Data> {
             ));
         }
 
-        let res = self.core.message_deframer.read(rd);
+        let res = self
+            .core
+            .message_deframer
+            .read(rd, &mut self.deframer_buffer);
         if let Ok(0) = res {
             self.has_seen_eof = true;
         }
@@ -605,7 +613,10 @@ impl<T> DerefMut for ConnectionCommon<T> {
 
 impl<Data> From<ConnectionCore<Data>> for ConnectionCommon<Data> {
     fn from(core: ConnectionCore<Data>) -> Self {
-        Self { core }
+        Self {
+            core,
+            deframer_buffer: DeframerVecBuffer::default(),
+        }
     }
 }
 
@@ -626,7 +637,10 @@ impl<Data> ConnectionCore<Data> {
         }
     }
 
-    pub(crate) fn process_new_packets(&mut self) -> Result<IoState, Error> {
+    pub(crate) fn process_new_packets(
+        &mut self,
+        deframer_buffer: &mut DeframerVecBuffer,
+    ) -> Result<IoState, Error> {
         let mut state = match mem::replace(&mut self.state, Err(Error::HandshakeNotComplete)) {
             Ok(state) => state,
             Err(e) => {
@@ -635,25 +649,35 @@ impl<Data> ConnectionCore<Data> {
             }
         };
 
-        while let Some(msg) = self.deframe()? {
+        let mut borrowed_buffer = deframer_buffer.borrow();
+        while let Some(msg) = self.deframe(Some(&*state), &mut borrowed_buffer)? {
             match self.process_msg(msg, state) {
                 Ok(new) => state = new,
                 Err(e) => {
                     self.state = Err(e.clone());
+                    let discard = borrowed_buffer.pending_discard();
+                    deframer_buffer.discard(discard);
                     return Err(e);
                 }
             }
         }
 
+        let discard = borrowed_buffer.pending_discard();
+        deframer_buffer.discard(discard);
         self.state = Ok(state);
         Ok(self.common_state.current_io_state())
     }
 
     /// Pull a message out of the deframer and send any messages that need to be sent as a result.
-    fn deframe(&mut self) -> Result<Option<PlainMessage>, Error> {
+    fn deframe(
+        &mut self,
+        state: Option<&dyn State<Data>>,
+        deframer_buffer: &mut DeframerSliceBuffer,
+    ) -> Result<Option<PlainMessage>, Error> {
         match self.message_deframer.pop(
             &mut self.common_state.record_layer,
             self.common_state.negotiated_version,
+            deframer_buffer,
         ) {
             Ok(Some(Deframed {
                 want_close_before_decrypt,
@@ -690,9 +714,14 @@ impl<Data> ConnectionCore<Data> {
             Err(err @ Error::PeerSentOversizedRecord) => Err(self
                 .common_state
                 .send_fatal_alert(AlertDescription::RecordOverflow, err)),
-            Err(err @ Error::DecryptError) => Err(self
-                .common_state
-                .send_fatal_alert(AlertDescription::BadRecordMac, err)),
+            Err(err @ Error::DecryptError) => {
+                if let Some(state) = state {
+                    state.handle_decrypt_error();
+                }
+                Err(self
+                    .common_state
+                    .send_fatal_alert(AlertDescription::BadRecordMac, err))
+            }
             Err(e) => Err(e),
         }
     }

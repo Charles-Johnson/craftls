@@ -45,6 +45,52 @@ https://docs.rs/craftls/
 We will not be supporting any non-features listed in [Rustls README](https://github.com/rustls/rustls?tab=readme-ov-file#non-features), including deprecated TLS versions and outdated cipher suites. 
 
 While these non-features may be included in browser fingerprints for completeness, any server attempt to use them will result in the termination of the connection. Most modern and secure servers do not utilize these outdated options, so this measure should not impact regular use.
+For reasons [explained in the manual](https://docs.rs/rustls/latest/rustls/manual/_02_tls_vulnerabilities/index.html),
+rustls does not and will not support:
+
+* SSL1, SSL2, SSL3, TLS1 or TLS1.1.
+* RC4.
+* DES or triple DES.
+* EXPORT ciphersuites.
+* MAC-then-encrypt ciphersuites.
+* Ciphersuites without forward secrecy.
+* Renegotiation.
+* Kerberos.
+* TLS 1.2 protocol compression.
+* Discrete-log Diffie-Hellman.
+* Automatic protocol version downgrade.
+* Using CA certificates directly to authenticate a server/client (often called "self-signed
+certificates"). _Rustls' default certificate verifier does not support using a trust anchor as
+both a CA certificate and an end-entity certificate in order to limit complexity and risk in
+path building. While dangerous, all authentication can be turned off if required --
+see the [example code](https://github.com/rustls/rustls/blob/992e2364a006b2e84a8cf6a7c3eaf0bdb773c9de/examples/src/bin/tlsclient-mio.rs#L318)_.
+
+There are plenty of other libraries that provide these features should you
+need them.
+
+### Platform support
+
+While Rustls itself is platform independent, by default it uses
+[`ring`](https://crates.io/crates/ring) for implementing the cryptography in
+TLS. As a result, rustls only runs on platforms
+supported by `ring`. At the time of writing, this means 32-bit ARM, Aarch64 (64-bit ARM),
+x86, x86-64, LoongArch64, 32-bit & 64-bit Little Endian MIPS, 32-bit PowerPC (Big Endian),
+64-bit PowerPC (Big and Little Endian), 64-bit RISC-V, and s390x. We do not presently
+support WebAssembly.
+For more information, see [the supported `ring` target platforms][ring-target-platforms].
+
+By providing a custom instance of the [`crypto::CryptoProvider`] struct, you
+can replace all cryptography dependencies of rustls.  This is a route to being portable
+to a wider set of architectures and environments, or compliance requirements.  See the
+[`crypto::CryptoProvider`] documentation for more details.
+
+Specifying `default-features = false` when depending on rustls will remove the
+dependency on *ring*.
+
+Rustls requires Rust 1.61 or later.
+
+[ring-target-platforms]: https://github.com/briansmith/ring/blob/2e8363b433fa3b3962c877d9ed2e9145612f3160/include/ring-core/target.h#L18-L64
+[crypto::CryptoProvider]: https://docs.rs/rustls/latest/rustls/crypto/trait.CryptoProvider.html
 
 # Example code
 

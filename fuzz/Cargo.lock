@@ -321,6 +321,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "rustls"
+version = "0.22.1"
+dependencies = [
+ "log",
+ "ring",
+ "rustls-pki-types",
+ "rustls-webpki",
+ "subtle",
+ "zeroize",
+]
+
+[[package]]
 name = "rustls-fuzz"
 version = "0.0.1"
 dependencies = [

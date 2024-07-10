@@ -6,6 +6,7 @@ use crate::crypto::cipher::{AeadKey, Iv};
 use crate::crypto::tls13::{Hkdf, HkdfExpander, OkmBlock};
 use crate::enums::{AlertDescription, ProtocolVersion};
 use crate::error::Error;
+use crate::msgs::deframer::DeframerVecBuffer;
 use crate::msgs::handshake::{ClientExtension, ServerExtension};
 use crate::server::{ServerConfig, ServerConnectionData};
 use crate::tls13::key_schedule::{
@@ -314,6 +315,7 @@ impl From<ServerConnection> for Connection {
 /// A shared interface for QUIC connections.
 pub struct ConnectionCommon<Data> {
     core: ConnectionCore<Data>,
+    deframer_buffer: DeframerVecBuffer,
 }
 
 impl<Data: SideData> ConnectionCommon<Data> {
@@ -356,10 +358,13 @@ impl<Data: SideData> ConnectionCommon<Data> {
     ///
     /// Handshake data obtained from separate encryption levels should be supplied in separate calls.
     pub fn read_hs(&mut self, plaintext: &[u8]) -> Result<(), Error> {
+        self.core.message_deframer.push(
+            ProtocolVersion::TLSv1_3,
+            plaintext,
+            &mut self.deframer_buffer,
+        )?;
         self.core
-            .message_deframer
-            .push(ProtocolVersion::TLSv1_3, plaintext)?;
-        self.core.process_new_packets()?;
+            .process_new_packets(&mut self.deframer_buffer)?;
         Ok(())
     }
 
@@ -397,7 +402,10 @@ impl<Data> DerefMut for ConnectionCommon<Data> {
 
 impl<Data> From<ConnectionCore<Data>> for ConnectionCommon<Data> {
     fn from(core: ConnectionCore<Data>) -> Self {
-        Self { core }
+        Self {
+            core,
+            deframer_buffer: DeframerVecBuffer::default(),
+        }
     }
 }
 
@@ -579,7 +587,7 @@ pub trait Algorithm: Send + Sync {
 }
 
 /// A QUIC header protection key
-pub trait HeaderProtectionKey {
+pub trait HeaderProtectionKey: Send + Sync {
     /// Adds QUIC Header Protection.
     ///
     /// `sample` must contain the sample of encrypted payload; see
@@ -640,7 +648,7 @@ pub trait HeaderProtectionKey {
 }
 
 /// Keys to encrypt or decrypt the payload of a packet
-pub trait PacketKey {
+pub trait PacketKey: Send + Sync {
     /// Encrypt a QUIC packet
     ///
     /// Takes a `packet_number`, used to derive the nonce; the packet `header`, which is used as
@@ -884,5 +892,19 @@ impl Version {
 impl Default for Version {
     fn default() -> Self {
         Self::V1
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::quic::HeaderProtectionKey;
+
+    use super::PacketKey;
+
+    #[test]
+    fn auto_traits() {
+        fn assert_auto<T: Send + Sync>() {}
+        assert_auto::<Box<dyn PacketKey>>();
+        assert_auto::<Box<dyn HeaderProtectionKey>>();
     }
 }

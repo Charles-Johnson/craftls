@@ -1,6 +1,6 @@
 [package]
 name = "craftls"
-version = "0.0.2+rustls.0.22.0"
+version = "0.0.3+rustls.0.22.1"
 edition = "2021"
 rust-version = "1.66"
 license = "Apache-2.0 OR ISC OR MIT"
@@ -73,5 +73,6 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [package.metadata.cargo_check_external_types]
 allowed_external_types = [
+    "rustls_pki_types",
     "rustls_pki_types::*",
 ]
