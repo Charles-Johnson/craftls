@@ -19,7 +19,7 @@ use rustls::{
 };
 use rustls::{CertificateCompression, CertificateCompressionAlgorithm, CompressionProvider}; // !craft!
 
-#[cfg(all(not(feature = "ring"), feature = "aws_lc_rs"))]
+#[cfg(all(not(feature = "ring"), feature = "aws-lc-rs"))]
 use rustls::crypto::aws_lc_rs as provider;
 #[cfg(feature = "ring")]
 use rustls::crypto::ring as provider;

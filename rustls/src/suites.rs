@@ -247,7 +247,7 @@ pub enum ConnectionTrafficSecrets {
 }
 
 #[cfg(all(test, feature = "ring"))]
-#[cfg(all(test, any(feature = "ring", feature = "aws_lc_rs")))]
+#[cfg(all(test, any(feature = "ring", feature = "aws-lc-rs")))]
 mod tests {
     use super::*;
     use crate::enums::CipherSuite;

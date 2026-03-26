@@ -607,7 +607,7 @@ impl KeySchedule {
     }
 
     /// Input the given secret.
-    #[cfg(all(test, any(feature = "ring", feature = "aws_lc_rs")))]
+    #[cfg(all(test, any(feature = "ring", feature = "aws-lc-rs")))]
     fn input_secret(&mut self, secret: &[u8]) {
         let salt = self.derive_for_empty_hash(SecretKind::DerivedSecret);
         self.current = self
@@ -828,7 +828,7 @@ where
     f(expander, info)
 }
 
-#[cfg(all(test, any(feature = "ring", feature = "aws_lc_rs")))]
+#[cfg(all(test, any(feature = "ring", feature = "aws-lc-rs")))]
 mod tests {
     use core::fmt::Debug;
 
@@ -1012,7 +1012,7 @@ mod tests {
 
 #[cfg(bench)]
 mod benchmarks {
-    #[cfg(any(feature = "ring", feature = "aws_lc_rs"))]
+    #[cfg(any(feature = "ring", feature = "aws-lc-rs"))]
     #[bench]
     fn bench_sha256(b: &mut test::Bencher) {
         use core::fmt::Debug;

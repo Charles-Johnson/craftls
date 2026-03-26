@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-#![cfg(any(feature = "ring", feature = "aws_lc_rs"))]
+#![cfg(any(feature = "ring", feature = "aws-lc-rs"))]
 
 use std::io;
 use std::ops::{Deref, DerefMut};
@@ -18,7 +18,7 @@ use rustls::RootCertStore;
 use rustls::{ClientConfig, ClientConnection};
 use rustls::{ConnectionCommon, ServerConfig, ServerConnection, SideData};
 
-#[cfg(all(not(feature = "ring"), feature = "aws_lc_rs"))]
+#[cfg(all(not(feature = "ring"), feature = "aws-lc-rs"))]
 pub use rustls::crypto::aws_lc_rs as provider;
 #[cfg(feature = "ring")]
 pub use rustls::crypto::ring as provider;
@@ -255,7 +255,7 @@ pub static ALL_KEY_TYPES: &[KeyType] = &[
     KeyType::Rsa,
     KeyType::EcdsaP256,
     KeyType::EcdsaP384,
-    #[cfg(all(not(feature = "ring"), feature = "aws_lc_rs"))]
+    #[cfg(all(not(feature = "ring"), feature = "aws-lc-rs"))]
     KeyType::EcdsaP521,
     KeyType::Ed25519,
 ];

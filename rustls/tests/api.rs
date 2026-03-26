@@ -1,4 +1,4 @@
-#![cfg(any(feature = "ring", feature = "aws_lc_rs"))]
+#![cfg(any(feature = "ring", feature = "aws-lc-rs"))]
 #![cfg_attr(read_buf, feature(read_buf))]
 #![cfg_attr(read_buf, feature(core_io_borrowed_buf))]
 //! Assorted public API tests.
@@ -980,7 +980,7 @@ fn server_cert_resolve_reduces_sigalgs_for_ecdsa_ciphersuite() {
         KeyType::EcdsaP256,
         CipherSuite::TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
         vec![
-            #[cfg(all(not(feature = "ring"), feature = "aws_lc_rs"))]
+            #[cfg(all(not(feature = "ring"), feature = "aws-lc-rs"))]
             SignatureScheme::ECDSA_NISTP521_SHA512,
             SignatureScheme::ECDSA_NISTP384_SHA384,
             SignatureScheme::ECDSA_NISTP256_SHA256,
@@ -1324,7 +1324,7 @@ fn test_client_cert_resolve(
     for version in rustls::ALL_VERSIONS {
         let expected_sigschemes = match version.version {
             ProtocolVersion::TLSv1_2 => vec![
-                #[cfg(all(not(feature = "ring"), feature = "aws_lc_rs"))]
+                #[cfg(all(not(feature = "ring"), feature = "aws-lc-rs"))]
                 SignatureScheme::ECDSA_NISTP521_SHA512,
                 SignatureScheme::ECDSA_NISTP384_SHA384,
                 SignatureScheme::ECDSA_NISTP256_SHA256,
@@ -1337,7 +1337,7 @@ fn test_client_cert_resolve(
                 SignatureScheme::RSA_PKCS1_SHA256,
             ],
             ProtocolVersion::TLSv1_3 => vec![
-                #[cfg(all(not(feature = "ring"), feature = "aws_lc_rs"))]
+                #[cfg(all(not(feature = "ring"), feature = "aws-lc-rs"))]
                 SignatureScheme::ECDSA_NISTP521_SHA512,
                 SignatureScheme::ECDSA_NISTP384_SHA384,
                 SignatureScheme::ECDSA_NISTP256_SHA256,
@@ -5524,7 +5524,7 @@ fn test_debug_server_name_from_string() {
     )
 }
 
-#[cfg(all(feature = "ring", feature = "aws_lc_rs"))]
+#[cfg(all(feature = "ring", feature = "aws-lc-rs"))]
 #[test]
 fn test_explicit_provider_selection() {
     let client_config = finish_client_config(

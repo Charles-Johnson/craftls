@@ -218,7 +218,7 @@ impl client::ResolvesClientCert for AlwaysResolvesClientCert {
     }
 }
 
-#[cfg(all(test, any(feature = "ring", feature = "aws_lc_rs")))]
+#[cfg(all(test, any(feature = "ring", feature = "aws-lc-rs")))]
 mod tests {
     use super::NoClientSessionStorage;
     use crate::client::ClientSessionStore;

@@ -41,7 +41,7 @@ impl HandshakeHashBuffer {
     }
 
     /// Hash or buffer a byte slice.
-    #[cfg(all(test, any(feature = "ring", feature = "aws_lc_rs")))]
+    #[cfg(all(test, any(feature = "ring", feature = "aws-lc-rs")))]
     fn update_raw(&mut self, buf: &[u8]) {
         self.buffer.extend_from_slice(buf);
     }
@@ -166,7 +166,7 @@ impl HandshakeHash {
     }
 }
 
-#[cfg(all(test, any(feature = "ring", feature = "aws_lc_rs")))]
+#[cfg(all(test, any(feature = "ring", feature = "aws-lc-rs")))]
 mod tests {
     use super::HandshakeHashBuffer;
     use crate::test_provider::hash::SHA256;

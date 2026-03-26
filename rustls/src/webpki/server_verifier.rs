@@ -280,7 +280,7 @@ impl ServerCertVerifier for WebPkiServerVerifier {
     }
 }
 
-#[cfg(all(test, any(feature = "ring", feature = "aws_lc_rs")))]
+#[cfg(all(test, any(feature = "ring", feature = "aws-lc-rs")))]
 mod tests {
     use std::sync::Arc;
 

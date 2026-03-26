@@ -1,6 +1,6 @@
 //! Tests for configuring and using a [`ServerCertVerifier`] for a client.
 
-#![cfg(any(feature = "ring", feature = "aws_lc_rs"))]
+#![cfg(any(feature = "ring", feature = "aws-lc-rs"))]
 
 mod common;
 use crate::common::{

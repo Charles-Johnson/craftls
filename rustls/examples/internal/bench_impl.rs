@@ -14,9 +14,9 @@ use std::time::{Duration, Instant};
 use pki_types::{CertificateDer, PrivateKeyDer};
 
 use rustls::client::Resumption;
-#[cfg(all(not(feature = "ring"), feature = "aws_lc_rs"))]
+#[cfg(all(not(feature = "ring"), feature = "aws-lc-rs"))]
 use rustls::crypto::aws_lc_rs as provider;
-#[cfg(all(not(feature = "ring"), feature = "aws_lc_rs"))]
+#[cfg(all(not(feature = "ring"), feature = "aws-lc-rs"))]
 use rustls::crypto::aws_lc_rs::{cipher_suite, Ticketer};
 #[cfg(feature = "ring")]
 use rustls::crypto::ring as provider;

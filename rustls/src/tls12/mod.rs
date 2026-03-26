@@ -330,7 +330,7 @@ pub(crate) fn decode_ecdh_params<T: Codec>(
 
 pub(crate) const DOWNGRADE_SENTINEL: [u8; 8] = [0x44, 0x4f, 0x57, 0x4e, 0x47, 0x52, 0x44, 0x01];
 
-#[cfg(all(test, any(feature = "ring", feature = "aws_lc_rs")))]
+#[cfg(all(test, any(feature = "ring", feature = "aws-lc-rs")))]
 mod tests {
     use super::*;
     use crate::common_state::{CommonState, Side};

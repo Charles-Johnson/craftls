@@ -142,7 +142,7 @@ mod tests {
     }
 }
 
-#[cfg(all(bench, any(feature = "ring", feature = "aws_lc_rs")))]
+#[cfg(all(bench, any(feature = "ring", feature = "aws-lc-rs")))]
 mod benchmarks {
     #[bench]
     fn bench_sha256(b: &mut test::Bencher) {
