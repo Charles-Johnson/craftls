@@ -79,7 +79,7 @@ fn pki_error(error: webpki::Error) -> Error {
     }
 }
 
-fn crl_error(e: webpki::Error) -> CertRevocationListError {
+fn crl_error(e: &webpki::Error) -> CertRevocationListError {
     use webpki::Error::*;
     match e {
         InvalidCrlSignatureForPublicKey
@@ -105,7 +105,7 @@ fn parse_crls(
     crls.iter()
         .map(|der| OwnedCertRevocationList::from_der(der.as_ref()).map(Into::into))
         .collect::<Result<Vec<_>, _>>()
-        .map_err(crl_error)
+        .map_err(|e| crl_error(&e))
 }
 
 mod tests {
@@ -179,11 +179,11 @@ mod tests {
             ),
         ];
         for t in testcases {
-            assert_eq!(crl_error(t.0), t.1);
+            assert_eq!(crl_error(&t.0), t.1);
         }
 
         assert!(matches!(
-            crl_error(webpki::Error::NameConstraintViolation),
+            crl_error(&webpki::Error::NameConstraintViolation),
             Other(_)
         ));
     }
