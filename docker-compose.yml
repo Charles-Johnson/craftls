@@ -1,6 +1,6 @@
 services:
   check:
-    image: rust:1.88
+    image: rust:1.95
     command: cargo fix -p rustls
     working_dir: /usr/src
     volumes:
