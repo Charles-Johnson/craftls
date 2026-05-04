@@ -19,7 +19,7 @@ pub struct Reader<'a> {
 impl<'a> Reader<'a> {
     /// Creates a new Reader of the provided `bytes` slice with
     /// the initial cursor position of zero.
-    pub fn init(bytes: &[u8]) -> Reader {
+    pub fn init(bytes: &[u8]) -> Reader<'_> {
         Reader {
             buffer: bytes,
             cursor: 0,
@@ -29,7 +29,7 @@ impl<'a> Reader<'a> {
     /// Attempts to create a new Reader on a sub section of this
     /// readers bytes by taking a slice of the provided `length`
     /// will return None if there is not enough bytes
-    pub fn sub(&mut self, length: usize) -> Result<Reader, InvalidMessage> {
+    pub fn sub(&mut self, length: usize) -> Result<Reader<'_>, InvalidMessage> {
         match self.take(length) {
             Some(bytes) => Ok(Reader::init(bytes)),
             None => Err(InvalidMessage::MessageTooShort),

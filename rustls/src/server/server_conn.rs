@@ -518,7 +518,7 @@ impl ServerConnection {
     /// - The client just doesn't support early data.
     /// - The connection doesn't resume an existing session.
     /// - The client hasn't sent a full ClientHello yet.
-    pub fn early_data(&mut self) -> Option<ReadEarlyData> {
+    pub fn early_data(&mut self) -> Option<ReadEarlyData<'_>> {
         let data = &mut self.inner.core.data;
         if data.early_data.was_accepted() {
             Some(ReadEarlyData::new(&mut data.early_data))

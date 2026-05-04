@@ -43,7 +43,7 @@ impl Connection {
     }
 
     /// Returns an object that allows reading plaintext.
-    pub fn reader(&mut self) -> Reader {
+    pub fn reader(&mut self) -> Reader<'_> {
         match self {
             Self::Client(conn) => conn.reader(),
             Self::Server(conn) => conn.reader(),
@@ -51,7 +51,7 @@ impl Connection {
     }
 
     /// Returns an object that allows writing plaintext.
-    pub fn writer(&mut self) -> Writer {
+    pub fn writer(&mut self) -> Writer<'_> {
         match self {
             Self::Client(conn) => Writer::new(&mut **conn),
             Self::Server(conn) => Writer::new(&mut **conn),
@@ -333,7 +333,7 @@ pub struct ConnectionCommon<Data> {
 
 impl<Data> ConnectionCommon<Data> {
     /// Returns an object that allows reading plaintext.
-    pub fn reader(&mut self) -> Reader {
+    pub fn reader(&mut self) -> Reader<'_> {
         let common = &mut self.core.common_state;
         Reader {
             received_plaintext: &mut common.received_plaintext,
@@ -346,7 +346,7 @@ impl<Data> ConnectionCommon<Data> {
     }
 
     /// Returns an object that allows writing plaintext.
-    pub fn writer(&mut self) -> Writer {
+    pub fn writer(&mut self) -> Writer<'_> {
         Writer::new(self)
     }
 

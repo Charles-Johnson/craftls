@@ -62,7 +62,7 @@ impl TicketSwitcher {
     ///
     /// For efficiency, this is also responsible for locking the state mutex
     /// and returning the mutexguard.
-    pub(crate) fn maybe_roll(&self, now: UnixTime) -> Option<MutexGuard<TicketSwitcherState>> {
+    pub(crate) fn maybe_roll(&self, now: UnixTime) -> Option<MutexGuard<'_, TicketSwitcherState>> {
         // The code below aims to make switching as efficient as possible
         // in the common case that the generator never fails. To achieve this
         // we run the following steps:

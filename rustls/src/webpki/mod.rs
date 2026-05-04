@@ -57,7 +57,7 @@ fn pki_error(error: webpki::Error) -> Error {
     use webpki::Error::*;
     match error {
         BadDer | BadDerTime | TrailingData(_) => CertificateError::BadEncoding.into(),
-        CertNotValidYet => CertificateError::NotValidYet.into(),
+        _CertNotValidYet => CertificateError::NotValidYet.into(),
         InvalidCertValidity => CertificateError::Expired.into(),
         UnknownIssuer => CertificateError::UnknownIssuer.into(),
         CertNotValidForName(_) => CertificateError::NotValidForName.into(),
