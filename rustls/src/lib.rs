@@ -274,7 +274,7 @@
 
 // Require docs for public APIs, deny unsafe code, etc.
 #![forbid(unsafe_code, unused_must_use)]
-#![cfg_attr(not(any(read_buf, bench)), forbid(unstable_features))]
+#![cfg_attr(not(feature = "read_buf"), forbid(unstable_features))]
 #![deny(
     clippy::alloc_instead_of_core,
     clippy::clone_on_ref_ptr,
@@ -430,9 +430,9 @@ pub mod internal {
 
 // Have a (non-public) "test provider" mod which supplies
 // tests that need part of a *ring*-compatible provider module.
-#[cfg(all(any(test, bench), not(feature = "ring"), feature = "aws-lc-rs"))]
+#[cfg(all(test, not(feature = "ring"), feature = "aws-lc-rs"))]
 use crate::crypto::aws_lc_rs as test_provider;
-#[cfg(all(any(test, bench), feature = "ring"))]
+#[cfg(all(test, feature = "ring"))]
 use crate::crypto::ring as test_provider;
 
 // The public interface is:
