@@ -106,7 +106,7 @@ impl ChunkVecBuffer {
         Ok(offs)
     }
 
-    #[cfg(read_buf)]
+    #[cfg(feature = "read_buf")]
     /// Read data out of this object, writing it into `cursor`.
     pub(crate) fn read_buf(&mut self, mut cursor: core::io::BorrowedCursor<'_>) -> io::Result<()> {
         while !self.is_empty() && cursor.capacity() > 0 {
@@ -165,7 +165,7 @@ mod tests {
         assert_eq!(buf.to_vec(), b"helloworldhe".to_vec());
     }
 
-    #[cfg(read_buf)]
+    #[cfg(feature = "read_buf")]
     #[test]
     fn read_buf() {
         use core::io::BorrowedBuf;

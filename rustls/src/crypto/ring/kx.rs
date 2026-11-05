@@ -109,7 +109,7 @@ mod tests {
     }
 }
 
-#[cfg(bench)]
+#[cfg(test)]
 mod benchmarks {
     #[bench]
     fn bench_x25519(b: &mut test::Bencher) {

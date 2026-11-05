@@ -313,11 +313,11 @@
 // build.rs set `read_buf` for (only) Rust Nightly to get the same effect.
 //
 // All the other conditional logic in the crate could use
-// `#[rustversion::nightly]` instead of `#[cfg(read_buf)]`; `#[cfg(read_buf)]`
+// `#[rustversion::nightly]` instead of `#[cfg(feature = "read_buf")]`; `#[cfg(feature = "read_buf")]`
 // is used to avoid needing `rustversion` to be compiled twice during
 // cross-compiling.
-#![cfg_attr(read_buf, feature(read_buf))]
-#![cfg_attr(read_buf, feature(core_io_borrowed_buf))]
+#![cfg_attr(feature = "read_buf", feature(read_buf))]
+#![cfg_attr(feature = "read_buf", feature(core_io_borrowed_buf))]
 #![cfg_attr(bench, feature(test))]
 #![cfg_attr(not(test), no_std)]
 
@@ -331,7 +331,7 @@ extern crate alloc;
 extern crate std;
 
 // Import `test` sysroot crate for `Bencher` definitions.
-#[cfg(bench)]
+#[cfg(test)]
 #[allow(unused_extern_crates)]
 extern crate test;
 

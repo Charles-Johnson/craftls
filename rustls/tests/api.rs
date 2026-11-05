@@ -1,6 +1,6 @@
 #![cfg(any(feature = "ring", feature = "aws-lc-rs"))]
-#![cfg_attr(read_buf, feature(read_buf))]
-#![cfg_attr(read_buf, feature(core_io_borrowed_buf))]
+#![cfg_attr(feature = "read_buf", feature(read_buf))]
+#![cfg_attr(feature = "read_buf", feature(core_io_borrowed_buf))]
 //! Assorted public API tests.
 use std::cell::RefCell;
 use std::fmt;
@@ -199,7 +199,7 @@ fn check_read_err(reader: &mut dyn io::Read, err_kind: io::ErrorKind) {
     assert!(matches!(err, err  if err.kind()  == err_kind))
 }
 
-#[cfg(read_buf)]
+#[cfg(feature = "read_buf")]
 fn check_read_buf(reader: &mut dyn io::Read, bytes: &[u8]) {
     use core::io::BorrowedBuf;
     use std::mem::MaybeUninit;
@@ -210,7 +210,7 @@ fn check_read_buf(reader: &mut dyn io::Read, bytes: &[u8]) {
     assert_eq!(buf.filled(), bytes);
 }
 
-#[cfg(read_buf)]
+#[cfg(feature = "read_buf")]
 fn check_read_buf_err(reader: &mut dyn io::Read, err_kind: io::ErrorKind) {
     use core::io::BorrowedBuf;
     use std::mem::MaybeUninit;
@@ -2196,7 +2196,7 @@ fn test_server_stream_write(stream_kind: StreamKind) {
 fn client_stream_read() {
     test_client_stream_read(StreamKind::Ref, ReadKind::Buf);
     test_client_stream_read(StreamKind::Owned, ReadKind::Buf);
-    #[cfg(read_buf)]
+    #[cfg(feature = "read_buf")]
     {
         test_client_stream_read(StreamKind::Ref, ReadKind::BorrowedBuf);
         test_client_stream_read(StreamKind::Owned, ReadKind::BorrowedBuf);
@@ -2207,7 +2207,7 @@ fn client_stream_read() {
 fn server_stream_read() {
     test_server_stream_read(StreamKind::Ref, ReadKind::Buf);
     test_server_stream_read(StreamKind::Owned, ReadKind::Buf);
-    #[cfg(read_buf)]
+    #[cfg(feature = "read_buf")]
     {
         test_server_stream_read(StreamKind::Ref, ReadKind::BorrowedBuf);
         test_server_stream_read(StreamKind::Owned, ReadKind::BorrowedBuf);
@@ -2217,7 +2217,7 @@ fn server_stream_read() {
 #[derive(Debug, Copy, Clone)]
 enum ReadKind {
     Buf,
-    #[cfg(read_buf)]
+    #[cfg(feature = "read_buf")]
     BorrowedBuf,
 }
 
@@ -2227,7 +2227,7 @@ fn test_stream_read(read_kind: ReadKind, mut stream: impl Read, data: &[u8]) {
             check_read(&mut stream, data);
             check_read_err(&mut stream, io::ErrorKind::UnexpectedEof)
         }
-        #[cfg(read_buf)]
+        #[cfg(feature = "read_buf")]
         ReadKind::BorrowedBuf => {
             check_read_buf(&mut stream, data);
             check_read_buf_err(&mut stream, io::ErrorKind::UnexpectedEof)

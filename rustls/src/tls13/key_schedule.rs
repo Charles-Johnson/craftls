@@ -1010,7 +1010,7 @@ mod tests {
     }
 }
 
-#[cfg(bench)]
+#[cfg(test)]
 mod benchmarks {
     #[cfg(any(feature = "ring", feature = "aws-lc-rs"))]
     #[bench]

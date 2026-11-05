@@ -625,7 +625,7 @@ mod tests {
     }
 }
 
-#[cfg(bench)]
+#[cfg(test)]
 mod benchmarks {
     use super::{PrivateKeyDer, PrivatePkcs8KeyDer, SignatureScheme};
 

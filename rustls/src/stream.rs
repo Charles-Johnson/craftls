@@ -65,7 +65,7 @@ where
         self.conn.reader().read(buf)
     }
 
-    #[cfg(read_buf)]
+    #[cfg(feature = "read_buf")]
     fn read_buf(&mut self, cursor: core::io::BorrowedCursor<'_>) -> Result<()> {
         self.complete_prior_io()?;
 
@@ -198,7 +198,7 @@ where
         self.as_stream().read(buf)
     }
 
-    #[cfg(read_buf)]
+    #[cfg(feature = "read_buf")]
     fn read_buf(&mut self, cursor: core::io::BorrowedCursor<'_>) -> Result<()> {
         self.as_stream().read_buf(cursor)
     }
